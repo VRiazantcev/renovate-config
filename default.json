@@ -1,0 +1,51 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Monthly dependency policy shared by every active project.",
+  "extends": ["config:recommended"],
+  "timezone": "Europe/Warsaw",
+  "schedule": ["* * 1 * *"],
+  "platformAutomerge": false,
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"]
+  },
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "schedule": ["* * 1 * *"]
+  },
+  "packageRules": [
+    {
+      "description": "Minor and patch updates share one PR and merge themselves once CI is green. A repo without CI reports no checks, so its PR waits for a person.",
+      "matchUpdateTypes": ["minor", "patch", "pin", "pinDigest", "digest"],
+      "groupName": "minor and patch",
+      "automerge": true
+    },
+    {
+      "description": "A major update is a migration: its own PR, never merged automatically.",
+      "matchUpdateTypes": ["major"],
+      "labels": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "Python 3.x to 3.y removes stdlib APIs. Renovate calls it minor; treat it as major. It needs its own group, because one non-automerge update stops the whole group from merging.",
+      "matchDepNames": ["python"],
+      "matchUpdateTypes": ["minor"],
+      "groupName": "python runtime",
+      "labels": ["major"],
+      "automerge": false
+    },
+    {
+      "description": "A Postgres major needs a dump and restore of the data directory, so it waits for approval on the Dependency Dashboard.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["postgres"],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Wait a week after a registry release: hijacked packages are usually caught and pulled within days. Registries only; Docker tags often lack a release timestamp and would never update.",
+      "matchDatasources": ["npm", "pypi"],
+      "minimumReleaseAge": "7 days"
+    }
+  ]
+}
